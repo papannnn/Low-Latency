@@ -2,8 +2,10 @@
 
 ## Topics
 
-- Containers, iterators, and algorithms
-- Iterator invalidation rules
-- Associative and unordered containers
-- Algorithm complexity and performance tradeoffs
-- Custom comparators, hashers, and allocators
+- vector
+- deque
+- list
+- set/multiset
+- map/unordered_map
+- Priority_queue
+- Custom allocators in STL
