@@ -2,8 +2,12 @@
 
 ## Topics
 
-- Lvalues, rvalues, and value categories
-- Move constructors and move assignment
-- `std::move` and `std::forward`
-- Universal references and forwarding references
-- Perfect forwarding patterns and pitfalls
+- rvalue references
+- std::move
+- std::forward
+- Move constructor
+- Move assignment
+- Perfect forwarding
+- Emplace vs push_back
+- Copy elision
+- NRVO
