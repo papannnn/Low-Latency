@@ -2,26 +2,22 @@
 
 namespace low_latency {
 
-template<typename T, typename Del, bool isEmpty = std::is_empty_v<Del> && !std::is_final_v<Del>>
+template<typename T, typename Del, bool isEmptyAndInheritable = std::is_empty_v<Del> && !std::is_final_v<Del>>
 class compressed_pair;
 
 template<typename T, typename Del>
 class compressed_pair<T, Del, false> {
     T* ptr;
-    Del deleter;
+    Del del;
 
 public:
-    compressed_pair(T* ptr_, Del deleter_) : ptr(ptr_), deleter(deleter_) {}
-    compressed_pair(compressed_pair&& that) : ptr{that.ptr}, deleter{std::move(that.deleter)} {
-        that.ptr = nullptr;
-    }
+    compressed_pair() = default;
+    compressed_pair(T* ptr_) : ptr(ptr_) {}
+    compressed_pair(T* ptr_, Del del_) : ptr(ptr_), del(del_) {}
+    compressed_pair(compressed_pair&& that) : ptr(std::exchange(that.ptr, nullptr)), del(std::move(that.del)) {}
     compressed_pair& operator=(compressed_pair&& that) {
-        if (this != &that) {
-            ptr = that.ptr;
-            deleter = that.deleter;
-            that.ptr = nullptr;
-        }
-        
+        ptr = std::exchange(that.ptr, nullptr);
+        del = std::move(that.del);
         return *this;
     }
 
@@ -30,26 +26,21 @@ public:
     }
 
     Del& second() {
-        return deleter;
+        return del;
     }
 };
 
 template<typename T, typename Del>
-class compressed_pair<T, Del, true> : public Del {
+class compressed_pair<T, Del, true> : private Del {
     T* ptr;
-
 public:
-    explicit compressed_pair(T* ptr_) : ptr(ptr_) {}
-    compressed_pair(compressed_pair&& that) : ptr{that.ptr} {
-        that.ptr = nullptr;
-    }
+    compressed_pair() = default;
+    compressed_pair(T* ptr_) : ptr(ptr_) {}
+    compressed_pair(T* ptr_, Del del_) : Del(del_), ptr(ptr_) {}
+    compressed_pair(compressed_pair&& that) : Del(std::move(that.second())), ptr(std::exchange(that.ptr, nullptr)) {}
     compressed_pair& operator=(compressed_pair&& that) {
-        if (this != &that) {
-            ptr = that.ptr;
-
-            that.ptr = nullptr;
-        }
-
+        static_cast<Del&>(*this) = std::move(that.second());
+        ptr = std::exchange(that.ptr, nullptr);
         return *this;
     }
 
@@ -64,35 +55,34 @@ public:
 
 template<typename T>
 struct DefaultDeleter {
-    void operator()(T* ptr) {
+    void operator() (T* ptr) {
         delete ptr;
     }
 };
 
-template<typename T, typename Deleter = DefaultDeleter<T>>
+template<typename T, typename Del = DefaultDeleter<T>>
 class unique_ptr {
-    compressed_pair<T, Deleter> data{};
+    compressed_pair<T, Del> data{};
+
+    void deletePtr() {
+        data.second()(data.first());
+    }
 
 public:
-    explicit unique_ptr(T* ptr_ = nullptr) : data{ptr_} { }
-
-    unique_ptr(T* ptr_, Deleter deleter_) : data{ptr_, deleter_} {}
+    unique_ptr(T* ptr_) : data{ptr_} {}
+    unique_ptr(T* ptr_, Del del_) : data{ptr_, del_} {}
 
     unique_ptr(const unique_ptr& that) = delete;
     unique_ptr& operator=(const unique_ptr& that) = delete;
 
-    unique_ptr(unique_ptr&& that) : data{std::move(that.data)} {}
+    unique_ptr(unique_ptr&& that) : data(std::move(that.data)) {}
 
     unique_ptr& operator=(unique_ptr&& that) {
         if (this != &that) {
-            data.second()(data.first());
+            deletePtr();
             data = std::move(that.data);
         }
         return *this;
-    }
-
-    ~unique_ptr() {
-        data.second()(data.first());
     }
 
     T* operator->() {
@@ -105,6 +95,10 @@ public:
 
     operator bool() {
         return data.first() != nullptr;
+    }
+
+    ~unique_ptr() {
+        deletePtr();
     }
 };
 
