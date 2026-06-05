@@ -39,7 +39,7 @@ public:
     compressed_pair(T* ptr_, Del del_) : Del(del_), ptr(ptr_) {}
     compressed_pair(compressed_pair&& that) : Del(std::move(that.second())), ptr(std::exchange(that.ptr, nullptr)) {}
     compressed_pair& operator=(compressed_pair&& that) {
-        static_cast<Del&>(*this) = std::move(that.second());
+        second() = std::move(that.second());
         ptr = std::exchange(that.ptr, nullptr);
         return *this;
     }
