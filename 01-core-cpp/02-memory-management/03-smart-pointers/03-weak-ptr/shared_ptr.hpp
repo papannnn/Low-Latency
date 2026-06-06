@@ -6,7 +6,12 @@
 namespace low_latency {
 
 template<typename T>
+class weak_ptr;
+
+template<typename T>
 class shared_ptr {
+    friend class weak_ptr<T>;
+
     T* ptr = nullptr;
     control_block_base* ctrl = nullptr;
 
@@ -77,6 +82,12 @@ public:
         ctrl = std::exchange(that.ctrl, nullptr);
 
         return *this;
+    }
+    
+    shared_ptr(const weak_ptr<T>& that) noexcept : ptr(that.ptr), ctrl(that.ctrl) {
+        if (ctrl != nullptr) {
+            ctrl->increment_strong();
+        }
     }
 
     void reset() noexcept {

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "shared_ptr.hpp"
+#include "weak_ptr.hpp"
 
 int main () {
     low_latency::shared_ptr<int> ptr(new int(100));
@@ -18,4 +19,7 @@ int main () {
         std::cout << "HELLOOOOO" << std::endl;
         delete ptr;
     });
+
+    low_latency::weak_ptr<int> ptr4 = ptr3;
+    std::cout << "Hey " << *(ptr4.lock()) << std::endl;
 }
