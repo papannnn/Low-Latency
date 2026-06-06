@@ -6,6 +6,13 @@ void d(int* ptr) {
     std::cout << "Deleted" << std::endl;
 }
 
+struct Deleter {
+    void operator()(int* ptr) {
+        std::cout << "YOYOYO" << std::endl;
+        delete ptr;
+    }
+};
+
 int main () {
     low_latency::unique_ptr<int> ptr(new int(6));
     
@@ -22,4 +29,9 @@ int main () {
     }
 
     low_latency::unique_ptr<int, decltype(&d)> ptr4(new int(199), d);
+
+    low_latency::unique_ptr<int, Deleter> ptr5(new int(9999));
+    if (ptr5) {
+        std::cout << *(ptr5) << std::endl;
+    }
 }
