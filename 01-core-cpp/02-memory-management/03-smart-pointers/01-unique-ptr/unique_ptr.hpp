@@ -12,20 +12,28 @@ class compressed_pair<T, Del, false> {
 
 public:
     compressed_pair() = default;
-    compressed_pair(T* ptr_) : ptr(ptr_) {}
-    compressed_pair(T* ptr_, Del del_) : ptr(ptr_), del(std::move(del_)) {}
-    compressed_pair(compressed_pair&& that) : ptr(std::exchange(that.ptr, nullptr)), del(std::move(that.del)) {}
-    compressed_pair& operator=(compressed_pair&& that) {
+    compressed_pair(T* ptr_) noexcept : ptr(ptr_) {}
+    compressed_pair(T* ptr_, Del del_) noexcept : ptr(ptr_), del(std::move(del_)) {}
+    compressed_pair(compressed_pair&& that) noexcept : ptr(std::exchange(that.ptr, nullptr)), del(std::move(that.del)) {}
+    compressed_pair& operator=(compressed_pair&& that) noexcept {
         ptr = std::exchange(that.ptr, nullptr);
         del = std::move(that.del);
         return *this;
     }
 
-    T* first() {
+    T* first() noexcept {
         return ptr;
     }
 
-    Del& second() {
+    T* first() const noexcept {
+        return ptr;
+    }
+
+    Del& second() noexcept {
+        return del;
+    }
+
+    Del& second() const noexcept {
         return del;
     }
 };
@@ -35,20 +43,28 @@ class compressed_pair<T, Del, true> : private Del {
     T* ptr;
 public:
     compressed_pair() = default;
-    compressed_pair(T* ptr_) : ptr(ptr_) {}
-    compressed_pair(T* ptr_, Del del_) : Del(std::move(del_)), ptr(ptr_) {}
-    compressed_pair(compressed_pair&& that) : Del(std::move(that.second())), ptr(std::exchange(that.ptr, nullptr)) {}
-    compressed_pair& operator=(compressed_pair&& that) {
+    compressed_pair(T* ptr_) noexcept : ptr(ptr_) {}
+    compressed_pair(T* ptr_, Del del_) noexcept : Del(std::move(del_)), ptr(ptr_) {}
+    compressed_pair(compressed_pair&& that) noexcept : Del(std::move(that.second())), ptr(std::exchange(that.ptr, nullptr)) {}
+    compressed_pair& operator=(compressed_pair&& that) noexcept {
         second() = std::move(that.second());
         ptr = std::exchange(that.ptr, nullptr);
         return *this;
     }
 
-    T* first() {
+    T* first() noexcept {
         return ptr;
     }
 
-    Del& second() {
+    T* first() const noexcept {
+        return ptr;
+    }
+
+    Del& second() noexcept {
+        return *this;
+    }
+
+    Del& second() const noexcept {
         return *this;
     }
 };
@@ -69,14 +85,14 @@ class unique_ptr {
     }
 
 public:
-    unique_ptr(T* ptr_) : data{ptr_} {}
-    unique_ptr(T* ptr_, Del del_) : data{ptr_, del_} {}
+    unique_ptr(T* ptr_) noexcept : data{ptr_} {}
+    unique_ptr(T* ptr_, Del del_) noexcept : data{ptr_, del_} {}
     
     unique_ptr(const unique_ptr& that) = delete;
     unique_ptr& operator=(const unique_ptr& that) = delete;
 
-    unique_ptr(unique_ptr&& that) : data(std::move(that.data)) {}
-    unique_ptr& operator=(unique_ptr&& that) {
+    unique_ptr(unique_ptr&& that) noexcept : data(std::move(that.data)) {}
+    unique_ptr& operator=(unique_ptr&& that) noexcept {
         if (this != &that) {
             deleteData();
             data = std::move(that.data);
@@ -84,15 +100,27 @@ public:
         return *this;
     }
 
-    T* operator->() {
+    T* operator->() noexcept {
         return data.first();
     }
 
-    T& operator*() {
+    T* operator->() const noexcept {
+        return data.first();
+    }
+
+    T& operator*() noexcept {
         return *(data.first());
     }
 
-    operator bool() {
+    T& operator*() const noexcept {
+        return *(data.first());
+    }
+
+    explicit operator bool() noexcept {
+        return data.first() != nullptr;
+    }
+
+    explicit operator bool() const noexcept {
         return data.first() != nullptr;
     }
 
