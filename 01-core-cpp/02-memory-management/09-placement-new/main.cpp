@@ -1,14 +1,3 @@
-# Placement `new`
-
-- Constructing objects in existing storage
-- Manual lifetime management
-- Alignment requirements
-- Explicit destructor calls
-- Common placement `new` use cases
-
-## Example Code
-
-```c++
 #include <iostream>
 
 class Example {
@@ -50,8 +39,3 @@ int main () {
         std::cout << (buf + i)->name << std::endl;
     }
 }
-```
-
-## Source
-
-https://www.youtube.com/watch?v=2bsGFQgBMXs
