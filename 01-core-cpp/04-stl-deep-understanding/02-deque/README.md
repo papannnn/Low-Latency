@@ -7,3 +7,7 @@
 - Random access behavior
 - Iterator invalidation
 - When to prefer `std::deque`
+
+## Source
+
+https://en.cppreference.com/cpp/container/list
