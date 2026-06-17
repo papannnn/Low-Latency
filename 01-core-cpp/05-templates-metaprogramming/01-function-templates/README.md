@@ -13,3 +13,5 @@
 https://www.geeksforgeeks.org/cpp/templates-cpp/
 
 https://ryonaldteofilo.medium.com/template-type-deduction-in-c-3daa64b09bbb
+
+https://www.youtube.com/watch?v=XgGEJylsWsQ
