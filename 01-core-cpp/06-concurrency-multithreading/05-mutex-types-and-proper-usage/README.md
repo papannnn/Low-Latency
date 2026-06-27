@@ -130,14 +130,59 @@ int main()
 
 ## std::recursive_mutex
 
+It's same like mutex, but same thread can lock one mutex multiple times using recursive mutex.
+
+If thread `T1` first call `lock()` on recursive mutex `m1`. That means, `T1` can do `lock()` again and again many times.
+
+But if `T1` lock it 10x, that means `T1` also need to unlock it 10x to make other thread can access it.
+
 ## std::timed_mutex
+
+This mutex is blocked till timeout time or lock is acquired and return true if success. Otherwise, false.
+
+The member function has `try_lock_for` and `try_lock_until`
 
 ## std::recursive_timed_mutex
 
+It's just a combination of `std::recursive_mutex` and `std::timed_mutex`.
+
 ## std::shared_mutex
+
+In some cases, several threads need to read the data from shared resources at the same time.
+
+We can use `std::shared_mutex`
+
+### Type of lock in `std::shared_mutex`
+
+#### Unique lock
+
+It is a unique lock that can only be acquired by a single thread at a time.
+
+You will use `lock()` & `unlock()`
+
+#### Shared lock
+
+The shared lock is a non-exclusive lock that several threads can acquire at once.
+
+You will use `lock_shared()` & `unlock_shared()`
 
 ## std::shared_timed_mutex
 
+It's just a combination of `std::shared_mutex` and `std::timed_mutex`.
+
 ## Source
 
+### `std::mutex`
 https://www.geeksforgeeks.org/cpp/std-mutex-in-cpp/
+
+### `std::recursive_mutex`
+
+https://www.youtube.com/watch?v=yCYU2k77E4A
+
+### `std::timed_mutex`
+
+https://www.youtube.com/watch?v=x0sHzDyETUc
+
+### `std::shared_mutex`
+
+https://www.geeksforgeeks.org/cpp/std-shared_mutex-in-cpp/
