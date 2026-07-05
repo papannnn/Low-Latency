@@ -7,3 +7,7 @@
 - Lock ordering
 - Resource hierarchy
 - Starvation prevention
+
+## Source 
+
+https://www.geeksforgeeks.org/operating-systems/dining-philosophers-problem/
