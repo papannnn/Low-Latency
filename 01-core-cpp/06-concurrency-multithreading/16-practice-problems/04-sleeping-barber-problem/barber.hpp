@@ -1,85 +1,96 @@
-#include <atomic>
 #include <condition_variable>
 #include <chrono>
 #include <iostream>
 #include <mutex>
 #include <set>
+#include <shared_mutex>
 #include <thread>
-#include <vector>
-
 
 class Barber {
 private:
     std::mutex _barberMtx;
     std::mutex _customerMtx;
+    std::mutex _setMtx;
+    std::shared_mutex _setDoneMtx;
     std::mutex _logMtx;
     std::condition_variable _barberState{};
     std::condition_variable _customerState{};
-    std::condition_variable _customerCuttinghairState{};
-    std::atomic<int> _currCust{-1};
     std::set<int> _setCust{};
+    std::set<int> _doneCust{};
 
     void log(std::string s) {
         std::lock_guard<std::mutex> lock(_logMtx);
         std::cout << s << std::endl;
     }
 
+    void insertSet(int customerNo) {
+        std::lock_guard<std::mutex> lock(_setMtx);
+        _setCust.insert(customerNo);
+    }
+
+    size_t readSetSize() {
+        std::lock_guard<std::mutex> lock(_setMtx);
+        return _setCust.size();
+    }
+
+    int getCustomerNo() {
+        std::lock_guard<std::mutex> lock(_setMtx);
+        int customerNo = *_setCust.begin();
+        _setCust.erase(customerNo);
+        return customerNo;
+    }
+
+    void insertDoneCust(int custNo) {
+        std::lock_guard<std::shared_mutex> lock(_setDoneMtx);
+        _doneCust.insert(custNo);
+    }
+
+    bool checkCustDone(int custNo) {
+        std::shared_lock<std::shared_mutex> lock(_setDoneMtx);
+        return _doneCust.find(custNo) != _doneCust.end();
+    }
+
+    void removeCustDone(int custNo) {
+        std::lock_guard<std::shared_mutex> lock(_setDoneMtx);
+        _doneCust.erase(custNo);
+    }
+
 public:
     void exec() {
         std::unique_lock<std::mutex> lock(_barberMtx);
-        int custNo = _currCust.load(std::memory_order_acquire);
-        if (custNo == -1) {
+
+        if (readSetSize() == 0) {
+            log("Barber goes to sleep");
             _barberState.wait(lock, [&] () {
-                bool valid = _setCust.size() != 0;
-                if (!valid) {
-                    log("No customer, barber go sleep");
-                } else {
-                    log("Just checking");
-                }
-                return valid && _currCust.load(std::memory_order_acquire) != -1;
+                return readSetSize() != 0;
             });
-            log("Barber wakes up");
+            log("Barber wake up");
         }
-        
-        custNo = _currCust.load(std::memory_order_acquire);
-        log(std::format("Barber cutting hair customer no: {}", custNo));
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-        log(std::format("Barber finished cutting hair customer no: {}", custNo));
-        
-        _currCust.store(-1, std::memory_order_release);
+
+        int custNo = getCustomerNo();
+        log(std::format("Barber will cut customer {} hair", custNo));
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        log(std::format("Barber finished cut customer {} hair", custNo));
+        insertDoneCust(custNo);
         _customerState.notify_all();
-        _customerCuttinghairState.notify_one();
     }
 
     void queue(int customerNumber) {
         log(std::format("Customer no: {} start queueing", customerNumber));
-        _setCust.insert(customerNumber);
-
-        _barberState.notify_one();
+        
+        insertSet(customerNumber);
 
         std::unique_lock<std::mutex> lock(_customerMtx);
 
-        log(std::format("Customer no: {} acquire the lock", customerNumber));
+        _barberState.notify_one();
 
         _customerState.wait(lock, [&] () {
-            int expected = -1;
-            return _currCust.compare_exchange_weak(
-                expected, 
-                customerNumber, 
-                std::memory_order_acq_rel, 
-                std::memory_order_acquire
-            );
-        });
-        
-        log(std::format("Customer no: {} be ready to cut hair", customerNumber));
-
-        _customerCuttinghairState.wait(lock, [&] () {
-            log(std::format("This {} ", _currCust.load(std::memory_order_acquire)));
-            return _currCust.load(std::memory_order_acquire) != customerNumber;
+            return checkCustDone(customerNumber);
         });
 
-        _setCust.erase(customerNumber);
-
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        removeCustDone(customerNumber);
+        log(std::format("Customer no: {} are finished cutting it's hair", customerNumber));
     }
 };
