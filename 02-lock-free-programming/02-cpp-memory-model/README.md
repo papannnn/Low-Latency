@@ -4,6 +4,10 @@ These topics are the backbone of lock-free programming.
 
 ## `std::atomic<T>` vs `volatile`
 
+`std::atomic<T>` helps prevent data races by ensuring that operations on shared variables are performed atomically.
+
+`volatile` keyword in C++ is used to declare variables that can be modified by external factors outside the program's control. Preventing certain optimizations that could lead to unexpected behavior.
+
 ## C++ Memory Orderings
 
 C++11 introduced a portable memory model with six orderings
@@ -80,6 +84,14 @@ Deprecated, don't use it
 
 ## Data races vs race conditions
 
+A data race occurs when two or more threads access the same memory location simultaneously, and at least one of the accesses is a write, without proper synchronization. Data races are low-level issues.
+
+Race condition is more about logical errors caused by incorrect sequencing or coordination of tasks
+
 ## Source
 
+https://www.geeksforgeeks.org/cpp/volatile-qualifier-in-cpp/
+
 https://www.amazon.com/Low-Latency-Trading-Insights-Performance/dp/B0GG5M4BN7
+
+https://abdulahd1996.medium.com/data-races-vs-race-conditions-understanding-the-differences-in-concurrency-602042cd54b2
