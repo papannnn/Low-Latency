@@ -95,3 +95,5 @@ https://www.geeksforgeeks.org/cpp/volatile-qualifier-in-cpp/
 https://www.amazon.com/Low-Latency-Trading-Insights-Performance/dp/B0GG5M4BN7
 
 https://abdulahd1996.medium.com/data-races-vs-race-conditions-understanding-the-differences-in-concurrency-602042cd54b2
+
+https://youtu.be/rMGWeSjctlY?si=WNJyTOmu1p5JCpZw
