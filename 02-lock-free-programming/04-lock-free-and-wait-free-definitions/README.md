@@ -128,12 +128,162 @@ void funcWaitFreeBoundedPopulationOblivious() {
 
 ## ABA Problem and Solutions
 
+The use of CAS has one problem to deal with. It is called the ABA problem. The problem arises from the C of CAS, where the comparison is value based.
+
+Example
+
+**Thread 1**
+```
+orig = atomic_load(head);   // orig = 0x01
+next = orig->next;          // next = 0x02
+
+// Context switch...
+```
+
+```
+Initial State
+==============
+
+head
+ │
+ ▼
++------+     +------+     +------+
+| 0x01 | --> | 0x02 | --> | 0x03 | --> NULL
++------+     +------+     +------+
+```
+
+Thread 2
+```
+pop();   // removes 0x01
+pop();   // removes 0x02
+
+// head -> 0x03
+```
+
+```
+head
+ │
+ ▼
++------+
+| 0x03 | --> NULL
++------+
+
+(0x01 and 0x02 have been removed and freed)
+
+Thread 1 still remembers:
+    orig = 0x01
+    next = 0x02
+```
+
+Thread 3
+```
+Node* node = malloc(sizeof(Node));
+// allocator reuses address 0x01
+
+push(node);
+
+// head -> 0x01 (new node)
+```
+
+```
+head
+ │
+ ▼
++--------------+     +------+
+| 0x01 (value4)| --> | 0x03 | --> NULL
++--------------+     +------+
+
+Thread 1 still remembers:
+    orig = 0x01
+    next = 0x02
+```
+
+Thread 1 resumes
+
+```
+CAS(head, orig, next);
+
+// CAS sees:
+// expected = 0x01
+// actual   = 0x01
+//
+// succeeds and sets
+//
+// head = 0x02
+//
+// but 0x02 has already been freed
+```
+
+```
+CAS compares:
+
+Expected: 0x01
+Actual:   0x01
+
+✓ CAS succeeds
+
+head
+ │
+ ▼
++-------------------+
+| 0x02 (FREED) 💀   |
++-------------------+
+
+Dangling pointer
+```
+
 ### Hazard Pointers
 
 ### Version Counters
 
 ### Tagged Pointers
 
+Add extra "tag" or "stamp" word to the quantity being considered. For example, an algorithm using compare and swap on a pointer might use a "tag" to indicate how many times the pointer has been successfully modified.
+
+```c++
+typedef struct _lfstack_t
+{
+    int tag;
+    Node *head;
+}
+```
+
+Every time when we use the pointer, we will increase the "tag" by 1.
+
+```c++
+void lfstack_push(_Atomic lfstack_t *lfstack, int value)
+{
+    lfstack_t next, orig = atomic_load(lfstack);
+    Node *node = malloc(sizeof(Node));
+    node->data = value;
+    do{
+        node->next = orig.head;
+        next.head = node;
+        next.tag = orig.tag+1; //increase the "tag"
+    }while(!atomic_compare_exchange_weak(lfstack,&orig,next));
+}
+
+int lfstack_pop(_Atomic lfstack_t *lfstack)
+{
+    lfstack_t next, orig = atomic_load(lfstack);
+    do{
+       if(orig.head == NULL)
+       {
+            return -1;
+       }
+       next.head = orig.head->next;
+       next.tag = orig.tag+1; //increase the "tag"
+    }while(!atomic_compare_exchange_weak(lfstack,&orig,next));
+    printf("poping value %d\n",orig.head->data);
+    free(orig.head);
+    return 0;
+}
+```
+
+Don't forget to change the initialization of stack.
+```
+_Atomic lfstack_t top = {0,NULL};
+```
 
 ## Source
 
@@ -142,3 +292,5 @@ https://concurrencyfreaks.blogspot.com/2013/05/lock-free-and-wait-free-definitio
 https://github.com/pramalhe/ConcurrencyFreaks/blob/master/C11/locks/ticket_mutex.c
 
 https://www.youtube.com/watch?v=5sZo3SrLrGA
+
+https://lumian2015.github.io/lockFreeProgramming/aba-problem.html
