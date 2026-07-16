@@ -234,9 +234,37 @@ Dangling pointer
 
 ### Hazard Pointers
 
-### Version Counters
+Instead of directly deleting the object when it's swapped out, we choose to retire it, and then other thread will try to check each thread one by one is the object is still really needed.
 
-### Tagged Pointers
+```c++
+struct ConfigProvider {
+    std::atomic<const Config*> cfg;
+
+    struct Accessor {
+        folly::hazptr hptr;
+        const Config* ptr;
+
+        Accessor(const std::atomic<const Config>& cfg) {
+            ptr = hptr.protect(cfg);
+        }
+
+        const Config* operator*() const {
+            return ptr;
+        }
+    };
+
+    Accessor get() const {
+        return Accessor{cfg};
+    }
+
+    void update(Config newCfg) {
+        auto* old = cfg.exchange(new Config{std::move(newCfg)});
+        old->retire();
+    }
+};
+```
+
+### Tagged Pointers & Version Counters
 
 Add extra "tag" or "stamp" word to the quantity being considered. For example, an algorithm using compare and swap on a pointer might use a "tag" to indicate how many times the pointer has been successfully modified.
 
