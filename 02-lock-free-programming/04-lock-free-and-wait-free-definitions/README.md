@@ -322,3 +322,5 @@ https://github.com/pramalhe/ConcurrencyFreaks/blob/master/C11/locks/ticket_mutex
 https://www.youtube.com/watch?v=5sZo3SrLrGA
 
 https://lumian2015.github.io/lockFreeProgramming/aba-problem.html
+
+https://www.youtube.com/watch?v=VKbfinz6D04
