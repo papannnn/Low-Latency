@@ -234,7 +234,7 @@ Dangling pointer
 
 ### Hazard Pointers
 
-Instead of directly deleting the object when it's swapped out, we choose to retire it, and then other thread will try to check each thread one by one is the object is still really needed.
+Instead of deleting the object immediately after it is swapped out, we place it in a retirement list. Later, the hazard pointer system checks the hazard pointers of all threads. If no thread is currently protecting that object, it is finally deleted. Otherwise, it remains in the retirement list until it is no longer being referenced.
 
 ```c++
 struct ConfigProvider {
