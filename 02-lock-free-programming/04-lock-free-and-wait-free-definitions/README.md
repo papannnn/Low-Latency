@@ -324,3 +324,5 @@ https://www.youtube.com/watch?v=5sZo3SrLrGA
 https://lumian2015.github.io/lockFreeProgramming/aba-problem.html
 
 https://www.youtube.com/watch?v=VKbfinz6D04
+
+https://towardsdev.com/cpp26-hazard-pointers-fix-aba-problem-lock-free-08b4b1db8a01
