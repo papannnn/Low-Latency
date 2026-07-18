@@ -11,3 +11,7 @@
 ## Note
 
 The topics above are especially important. Try investing at least one week on them.
+
+## Source
+
+https://youtu.be/pxg-n5axuRc?si=_LYsgjMDgQjRn0aV
