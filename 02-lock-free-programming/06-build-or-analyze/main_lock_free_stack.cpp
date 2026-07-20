@@ -8,9 +8,9 @@ int main () {
 
     stk.push("Hello");
 
-    std::cout << stk.top() << std::endl;
+    // std::cout << stk.top() << std::endl;
 
-    stk.push("World");
+    // stk.push("World");
 
-    std::cout << stk.top() << std::endl;
+    // std::cout << stk.top() << std::endl;
 }
