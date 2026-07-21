@@ -8,8 +8,17 @@ int main () {
 
     stk.push("Hello");
 
-    // std::cout << stk.top() << std::endl;
+    std::optional<std::string> d = stk.pop();
+    if (d) {
+        std::cout << d.value() << std::endl;
+    }
+    
+    stk.push("World");
 
+    d = stk.pop();
+    if (d) {
+        std::cout << d.value() << std::endl;
+    }
     // stk.push("World");
 
     // std::cout << stk.top() << std::endl;
