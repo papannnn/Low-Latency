@@ -4,7 +4,7 @@
 
 - Lock-free stacks, including Treiber stack
 - Lock-free queues, including Michael-Scott queue
-- Ring buffers, including SPSC and MPSC
+- Ring buffers, including SPSC and MPSC (MPMC is too hard, skipping this for now)
 - Free lists and memory pools
 - Hazard pointers and RCU (Read-Copy-Update)
 
