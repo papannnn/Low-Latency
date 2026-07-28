@@ -10,17 +10,17 @@ class Dummy {
 
 int main () {
     FreeList freeList(1024);
-
     freeList.debug();
-    int *i = freeList.allocate<int>(10);
+    int* a = freeList.allocate<int>(50);
     freeList.debug();
 
-    std::cout << *i << std::endl;
+    int* b = freeList.allocate<int>(55);
+    freeList.debug();
 
-    Dummy* d = freeList.allocate<Dummy>();
-
-
+    freeList.deallocate(a);
 
     freeList.debug();
 
+    freeList.deallocate(b);
+    freeList.debug();
 }
