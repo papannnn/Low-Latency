@@ -3,7 +3,8 @@
 ## Topics
 
 - [Double-checked locking](./double-checked-locking/README.md)
-- Seqlocks and ticket locks
+- [Seqlocks](./seq-lock/README.md)
+- Ticket Locks
 - Memory reclamation strategies:
   - Hazard pointers
   - Epoch-based reclamation
