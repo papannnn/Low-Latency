@@ -2,7 +2,7 @@
 
 ## Topics
 
-- Double-checked locking
+- [Double-checked locking](./double-checked-locking/README.md)
 - Seqlocks and ticket locks
 - Memory reclamation strategies:
   - Hazard pointers
