@@ -4,7 +4,7 @@
 
 - [Double-checked locking](./double-checked-locking/README.md)
 - [Seqlocks](./seq-lock/README.md)
-- Ticket Locks
+- [Ticket Locks](./ticket-lock)
 - Memory reclamation strategies:
   - Hazard pointers
   - Epoch-based reclamation
