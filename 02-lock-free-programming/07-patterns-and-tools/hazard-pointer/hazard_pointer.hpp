@@ -35,29 +35,38 @@ private:
     std::array<std::atomic<void*>, S * 4> _retireList;
 
     void protect(size_t idx, void* ptr) {
+        void* pointerProtect0 = _pointerProtect[idx][0].load(std::memory_order_acquire);
+        void* pointerProtect1 = _pointerProtect[idx][1].load(std::memory_order_acquire);
         // It's already protected
-        if (_pointerProtect[idx][0] == ptr || _pointerProtect[idx][1] == ptr) {
+        if (pointerProtect0 == ptr || pointerProtect1 == ptr) {
             return;
         }
 
         // No space to do protect
-        if (_pointerProtect[idx][0] != nullptr && _pointerProtect[idx][1] != nullptr) {
+        if (pointerProtect0 != nullptr && pointerProtect1 != nullptr) {
             return;
         }
 
-        if (_pointerProtect[idx][0] == nullptr) {
-            _pointerProtect[idx][0] = ptr;
+        void* expected = nullptr;
+        if (_pointerProtect[idx][0].compare_exchange_strong(expected, ptr)) {
+            return;
         }
-
-        if (_pointerProtect[idx][1] == nullptr) {
-            _pointerProtect[idx][1] = ptr;
+        
+        if (_pointerProtect[idx][1].compare_exchange_strong(expected, ptr)) {
+            return;
         }
     }
 
     void retire(size_t index, void* ptr) {
-        bool found = _pointerProtect[index][0] == ptr || _pointerProtect[index][1] == ptr;
-        if (_pointerProtect[index][0].load(std::memory_order_acquire) == ptr) {
-            _pointerProtect[index][0].store(nullptr, std::memory_order_release);
+        void* pointerProtect0 = _pointerProtect[index][0].load(std::memory_order_acquire);
+        void* pointerProtect1 = _pointerProtect[index][1].load(std::memory_order_acquire);
+
+        bool found = pointerProtect0 == ptr || pointerProtect1 == ptr;
+        std::atomic<void*> dummy;
+        void* expected = ptr;
+        dummy.compare_exchange_strong(expected, ptr);
+        if (_pointerProtect[index][0].compare_exchange_strong(expected, ptr)) {
+            
         }
 
         if (_pointerProtect[index][1].load(std::memory_order_acquire) == ptr) {
@@ -68,7 +77,7 @@ private:
             return;
         }
 
-        
+
     }
 
     friend HazardPointerOwner<S>;
