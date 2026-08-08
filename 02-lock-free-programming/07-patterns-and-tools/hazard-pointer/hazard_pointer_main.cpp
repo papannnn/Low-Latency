@@ -16,6 +16,7 @@ int main () {
         } else {
             std::cout << "Value changed, need to refetch" << std::endl;
         }
+        owner.unprotect(temp);
         val = new int(20);
         owner.retire(temp);
     });
