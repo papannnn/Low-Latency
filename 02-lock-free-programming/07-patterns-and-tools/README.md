@@ -2,12 +2,12 @@
 
 ## Topics
 
-- [Double-checked locking](./double-checked-locking/README.md)
-- [Seqlocks](./seq-lock/README.md)
-- [Ticket Locks](./ticket-lock)
+- [Double-checked locking](./double-checked-locking/)
+- [Seqlocks](./seq-lock/)
+- [Ticket Locks](./ticket-lock/)
 - Memory reclamation strategies:
-  - Hazard pointers
-  - Epoch-based reclamation
+  - [Hazard pointers](./hazard-pointer/)
+  - [Epoch-based reclamation](./epoch-based-reclamation/)
 - Tools for verification:
   - ThreadSanitizer
   - Valgrind Helgrind
