@@ -1,5 +1,9 @@
 # ThreadSanitizer
 
+```
+clang -fsanitize=thread -g -O1 tiny_race.c
+```
+
 ## Source
 
 https://youtu.be/SiI3-pJ6MMU?si=r2HImQQWqDuRFnF9
